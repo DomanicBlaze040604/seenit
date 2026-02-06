@@ -1,19 +1,34 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
 
 @theme {
-  --font-display: "Public Sans", sans-serif;
+  --font-display: "Roboto", sans-serif;
+  --font-body: "Roboto", sans-serif;
 
-  /* Primary Colors */
-  --color-primary-50: #eff8ff;
-  --color-primary-100: #dbeffe;
-  --color-primary-200: #bfe3fe;
-  --color-primary-300: #93d2fd;
-  --color-primary-400: #60b8fa;
-  --color-primary-500: #2b8cee;
-  --color-primary-600: #1e7ed8;
-  --color-primary-700: #1a66af;
-  --color-primary-800: #1c568f;
-  --color-primary-900: #1c4975;
+  /* Charcoal Colors */
+  --color-charcoal-50: #f7f7f8;
+  --color-charcoal-100: #eeeef0;
+  --color-charcoal-200: #d9d9de;
+  --color-charcoal-300: #b8b8c1;
+  --color-charcoal-400: #91919f;
+  --color-charcoal-500: #737384;
+  --color-charcoal-600: #5d5d6b;
+  --color-charcoal-700: #4c4c57;
+  --color-charcoal-800: #41414a;
+  --color-charcoal-900: #393940;
+  --color-charcoal-950: #1a1a1f;
+
+  /* Primary Bold Blue Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
 
   /* Success Colors */
   --color-success-50: #ecfdf5;
@@ -42,8 +57,10 @@ body {
 
 body {
   background-color: #f6f7f8;
-  color: #0d141b;
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1a1a1f;
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -53,7 +70,93 @@ body {
   color: #f1f5f9;
 }
 
-/* Animations */
+/* Typography - Headlines */
+h1,
+.headline-lg {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h2,
+.headline-md {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h3,
+.headline-sm {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Body text */
+p,
+.body-text {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.body-text-sm {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Button Hover Effects */
+.btn-primary {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+}
+
+.btn-secondary {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* Badge Hover Animations */
+.badge-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.badge-hover:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px 2px rgba(59, 130, 246, 0.25);
+}
+
+/* Trust Pill Style */
+.trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.trust-pill:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Base Animations */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -64,6 +167,36 @@ body {
 
 .animate-scale-in {
   animation: scaleIn 0.2s ease-out forwards;
+}
+
+.animate-badge-hover {
+  animation: badgeHover 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Success Checkmark Animation */
+.animate-checkmark-success {
+  animation: checkmarkSuccess 0.5s ease-out forwards;
+}
+
+.success-checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #10b981;
+  border-radius: 50%;
+  color: white;
+  opacity: 0;
+  transform: scale(0);
+}
+
+.success-checkmark.show {
+  animation: checkmarkSuccess 0.5s ease-out forwards;
 }
 
 @keyframes fadeIn {
@@ -97,6 +230,49 @@ body {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes badgeHover {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.3);
+  }
+}
+
+@keyframes checkmarkSuccess {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -154,4 +330,21 @@ select:focus {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Section spacing for landing page */
+.section-spacing {
+  padding: 5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding: 6rem 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-spacing {
+    padding: 7rem 5rem;
+  }
 }
