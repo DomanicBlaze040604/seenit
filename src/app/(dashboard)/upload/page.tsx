@@ -1,463 +1,215 @@
 "use client";
-
 import * as React from "react";
 import { useRouter } from "next/navigation";
-
-interface Product {
-    id: string;
-    name: string;
-    category: string;
-    image?: string;
-}
-
-const mockProducts: Product[] = [
-    { id: "1", name: "Sony WH-1000XM5", category: "Electronics", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100" },
-    { id: "2", name: "MacBook Pro 14\"", category: "Computers", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100" },
-    { id: "3", name: "iPhone 15 Pro", category: "Electronics", image: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=100" },
-    { id: "4", name: "Dyson V15 Detect", category: "Home", image: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=100" },
-    { id: "5", name: "Samsung Galaxy S24", category: "Electronics", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=100" },
-];
+import { useProducts } from "@/hooks";
 
 type Step = 1 | 2 | 3 | 4;
-type ProofType = "USAGE" | "UNBOXING" | "FOLLOWUP";
+const stepLabels = ["Video", "Product", "Details", "Submit"];
 
 export default function UploadPage() {
     const router = useRouter();
-    const [currentStep, setCurrentStep] = React.useState<Step>(1);
-
-    // Step 1: Video
+    const { products } = useProducts();
+    const [step, setStep] = React.useState<Step>(1);
     const [videoFile, setVideoFile] = React.useState<File | null>(null);
-    const [videoPreview, setVideoPreview] = React.useState<string | null>(null);
-    const [videoDuration, setVideoDuration] = React.useState(0);
-
-    // Step 2: Product
-    const [productSearch, setProductSearch] = React.useState("");
-    const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
-
-    // Step 3: Details
-    const [proofType, setProofType] = React.useState<ProofType | null>(null);
+    const [productId, setProductId] = React.useState("");
     const [title, setTitle] = React.useState("");
-
-    // Step 4: Submit
+    const [proofType, setProofType] = React.useState("USAGE");
+    const [usageMonths, setUsageMonths] = React.useState(1);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [uploadProgress, setUploadProgress] = React.useState(0);
-    const [error, setError] = React.useState<string | null>(null);
+    const [dragOver, setDragOver] = React.useState(false);
 
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const videoRef = React.useRef<HTMLVideoElement>(null);
-
-    const filteredProducts = productSearch
-        ? mockProducts.filter((p) =>
-            p.name.toLowerCase().includes(productSearch.toLowerCase())
-        )
-        : mockProducts;
-
-    const handleFileSelect = (file: File) => {
-        setError(null);
-
-        if (!file.type.startsWith("video/")) {
-            setError("Please select a video file");
-            return;
-        }
-
-        if (file.size > 500 * 1024 * 1024) {
-            setError("Video must be less than 500MB");
-            return;
-        }
-
-        setVideoFile(file);
-        const url = URL.createObjectURL(file);
-        setVideoPreview(url);
-    };
-
-    const handleVideoLoad = () => {
-        if (videoRef.current) {
-            const duration = videoRef.current.duration;
-            setVideoDuration(duration);
-
-            if (duration < 30) {
-                setError("Video must be at least 30 seconds");
-                setVideoFile(null);
-                setVideoPreview(null);
-                return;
-            }
-
-            if (duration > 300) {
-                setError("Video must be less than 5 minutes");
-                setVideoFile(null);
-                setVideoPreview(null);
-                return;
-            }
-        }
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files[0];
+        if (file?.type.startsWith("video/")) setVideoFile(file);
     };
 
     const handleSubmit = async () => {
-        if (!videoFile || !selectedProduct || !proofType) return;
-
         setIsSubmitting(true);
-        setUploadProgress(0);
-        setError(null);
-
         try {
-            // Simulate upload progress
-            const interval = setInterval(() => {
-                setUploadProgress((prev) => {
-                    if (prev >= 95) {
-                        clearInterval(interval);
-                        return 95;
-                    }
-                    return prev + Math.random() * 15;
-                });
-            }, 200);
-
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            clearInterval(interval);
-            setUploadProgress(100);
-
-            setTimeout(() => {
-                router.push("/reviews?uploaded=true");
-            }, 500);
-        } catch (err: any) {
-            setError(err.message || "Upload failed");
-            setUploadProgress(0);
-        } finally {
+            const res = await fetch("/api/reviews", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title,
+                    product_id: productId || undefined,
+                    proof_type: proofType,
+                    usage_duration_months: usageMonths,
+                    video_url: "pending_upload",
+                    duration: 0,
+                }),
+            });
+            if (res.ok) router.push("/reviews");
+        } catch { /* silent */ } finally {
             setIsSubmitting(false);
         }
     };
 
-    const canProceed = () => {
-        switch (currentStep) {
-            case 1:
-                return videoFile && !error;
-            case 2:
-                return selectedProduct;
-            case 3:
-                return proofType && title.trim().length >= 10;
-            case 4:
-                return true;
-            default:
-                return false;
-        }
-    };
-
-    const formatDuration = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
-    };
-
-    const steps = [
-        { num: 1, label: "Video", icon: "videocam" },
-        { num: 2, label: "Product", icon: "inventory_2" },
-        { num: 3, label: "Details", icon: "edit_note" },
-        { num: 4, label: "Submit", icon: "check_circle" },
-    ];
-
     return (
-        <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
-            {/* Header */}
-            <div className="text-center">
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900">Upload Review</h1>
-                <p className="text-slate-500 mt-2">Share your authentic product experience</p>
-            </div>
+        <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Upload Review</h1>
+            <p className="text-gray-500 mb-8">Share your honest experience with a product</p>
 
-            {/* Progress Steps */}
-            <div className="flex items-center justify-between">
-                {steps.map((step, index) => (
-                    <React.Fragment key={step.num}>
-                        <div className="flex flex-col items-center gap-2">
-                            <div
-                                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${currentStep >= step.num
-                                        ? "bg-[#2b8cee] text-white"
-                                        : "bg-slate-200 text-slate-500"
-                                    }`}
-                            >
-                                <span className="material-symbols-outlined text-lg md:text-xl">{step.icon}</span>
+            {/* Step Indicator */}
+            <div className="flex items-center gap-2 mb-10">
+                {stepLabels.map((label, i) => {
+                    const num = (i + 1) as Step;
+                    const isActive = step === num;
+                    const isDone = step > num;
+                    return (
+                        <React.Fragment key={label}>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${isDone ? "bg-accent-green-500 text-white" : isActive ? "bg-primary-500 text-white" : "bg-gray-200 text-gray-500"}`}>
+                                    {isDone ? "✓" : num}
+                                </div>
+                                <span className={`text-sm font-medium hidden sm:inline ${isActive ? "text-gray-900" : "text-gray-400"}`}>{label}</span>
                             </div>
-                            <span
-                                className={`text-xs font-medium hidden sm:block ${currentStep >= step.num ? "text-[#2b8cee]" : "text-slate-400"
-                                    }`}
-                            >
-                                {step.label}
-                            </span>
-                        </div>
-                        {index < steps.length - 1 && (
-                            <div
-                                className={`flex-1 h-1 mx-2 rounded transition-colors ${currentStep > step.num ? "bg-[#2b8cee]" : "bg-slate-200"
-                                    }`}
-                            />
-                        )}
-                    </React.Fragment>
-                ))}
+                            {i < 3 && <div className={`flex-1 h-0.5 ${isDone ? "bg-accent-green-500" : "bg-gray-200"}`} />}
+                        </React.Fragment>
+                    );
+                })}
             </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm flex items-center gap-2">
-                    <span className="material-symbols-outlined text-lg">error</span>
-                    {error}
-                </div>
-            )}
 
             {/* Step Content */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 md:p-8">
-                {/* Step 1: Video Upload */}
-                {currentStep === 1 && (
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">Upload Your Video</h2>
-                            <p className="text-slate-500 text-sm">30 seconds to 5 minutes, max 500MB</p>
+            <div className="bg-white rounded-xl p-8 border border-gray-200">
+                {step === 1 && (
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Upload your video</h2>
+                        <div
+                            className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragOver ? "border-primary-400 bg-primary-50" : videoFile ? "border-accent-green-400 bg-accent-green-50" : "border-gray-300 hover:border-gray-400"}`}
+                            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                            onDragLeave={() => setDragOver(false)}
+                            onDrop={handleDrop}
+                        >
+                            <span className={`material-symbols-outlined !text-5xl mb-4 block ${videoFile ? "text-accent-green-500" : "text-gray-300"}`}>
+                                {videoFile ? "check_circle" : "cloud_upload"}
+                            </span>
+                            {videoFile ? (
+                                <div>
+                                    <p className="text-gray-900 font-semibold">{videoFile.name}</p>
+                                    <p className="text-sm text-gray-500 mt-1">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
+                                    <button className="text-accent-red-500 text-sm mt-3 font-medium hover:underline" onClick={() => setVideoFile(null)}>Remove</button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p className="text-gray-700 font-medium">Drag and drop your video here</p>
+                                    <p className="text-sm text-gray-400 mt-1">MP4, MOV, or WebM • Max 500MB</p>
+                                    <label className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-50 text-primary-600 font-semibold text-sm cursor-pointer hover:bg-primary-100 transition-colors">
+                                        <span className="material-symbols-outlined !text-[18px]">folder_open</span>
+                                        Browse Files
+                                        <input type="file" accept="video/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setVideoFile(e.target.files[0]); }} />
+                                    </label>
+                                </div>
+                            )}
                         </div>
-
-                        {!videoPreview ? (
-                            <div
-                                onClick={() => fileInputRef.current?.click()}
-                                className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center cursor-pointer hover:border-[#2b8cee] hover:bg-[#2b8cee]/5 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-5xl text-slate-400 mb-4">
-                                    cloud_upload
-                                </span>
-                                <p className="text-slate-700 font-medium mb-2">Click to upload video</p>
-                                <p className="text-slate-400 text-sm">MP4, MOV, WebM supported</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
-                                    <video
-                                        ref={videoRef}
-                                        src={videoPreview}
-                                        onLoadedMetadata={handleVideoLoad}
-                                        controls
-                                        className="w-full h-full"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm text-slate-500">
-                                        <span className="font-medium text-slate-700">{videoFile?.name}</span>
-                                        {videoDuration > 0 && (
-                                            <span className="ml-3">Duration: {formatDuration(videoDuration)}</span>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            setVideoFile(null);
-                                            setVideoPreview(null);
-                                            setVideoDuration(0);
-                                        }}
-                                        className="text-red-600 text-sm font-medium hover:underline"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="video/*"
-                            className="hidden"
-                            onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                        />
                     </div>
                 )}
 
-                {/* Step 2: Select Product */}
-                {currentStep === 2 && (
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">Select Product</h2>
-                            <p className="text-slate-500 text-sm">What product are you reviewing?</p>
-                        </div>
-
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                <span className="material-symbols-outlined text-lg">search</span>
-                            </span>
-                            <input
-                                type="text"
-                                value={productSearch}
-                                onChange={(e) => setProductSearch(e.target.value)}
-                                placeholder="Search products..."
-                                className="w-full bg-slate-100 border-none rounded-lg py-3 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2b8cee]/20"
-                            />
-                        </div>
-
-                        <div className="space-y-2 max-h-80 overflow-y-auto">
-                            {filteredProducts.map((product) => (
+                {step === 2 && (
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Select product</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto">
+                            {products?.map((p) => (
                                 <button
-                                    key={product.id}
-                                    onClick={() => setSelectedProduct(product)}
-                                    className={`w-full flex items-center gap-4 p-4 rounded-lg border transition-colors ${selectedProduct?.id === product.id
-                                            ? "border-[#2b8cee] bg-[#2b8cee]/5"
-                                            : "border-slate-200 hover:bg-slate-50"
-                                        }`}
+                                    key={p.id}
+                                    onClick={() => setProductId(p.id)}
+                                    className={`text-left p-4 rounded-lg border transition-colors ${productId === p.id ? "border-primary-500 bg-primary-50" : "border-gray-200 hover:border-gray-300"}`}
                                 >
-                                    <div
-                                        className="w-12 h-12 rounded-lg bg-cover bg-center bg-slate-200"
-                                        style={{ backgroundImage: product.image ? `url('${product.image}')` : undefined }}
-                                    />
-                                    <div className="flex-1 text-left">
-                                        <p className="font-medium text-slate-900">{product.name}</p>
-                                        <p className="text-sm text-slate-500">{product.category}</p>
-                                    </div>
-                                    {selectedProduct?.id === product.id && (
-                                        <span className="material-symbols-outlined text-[#2b8cee]">check_circle</span>
-                                    )}
+                                    <p className="font-semibold text-gray-900 text-sm">{p.name}</p>
+                                    <p className="text-xs text-gray-500 mt-1">{p.category}</p>
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {/* Step 3: Details */}
-                {currentStep === 3 && (
+                {step === 3 && (
                     <div className="space-y-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Review details</h2>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">Review Details</h2>
-                            <p className="text-slate-500 text-sm">Tell us more about your review</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                Review Title
-                            </label>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
                             <input
-                                type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                placeholder="e.g., Honest review after 6 months of use"
-                                className="w-full bg-slate-100 border-none rounded-lg py-3 px-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2b8cee]/20"
+                                className="w-full h-11 px-4 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                                placeholder="Give your review a descriptive title"
                             />
-                            <p className="text-xs text-slate-400 mt-1">{title.length}/100 characters</p>
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-3">
-                                Proof Type
-                            </label>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {([
-                                    { value: "USAGE", label: "Usage Proof", icon: "inventory_2", desc: "Show product in use" },
-                                    { value: "UNBOXING", label: "Unboxing", icon: "package_2", desc: "Fresh out of box" },
-                                    { value: "FOLLOWUP", label: "Follow-up", icon: "update", desc: "Long-term review" },
-                                ] as const).map((type) => (
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">Proof Type</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { value: "USAGE", label: "Daily Usage", icon: "schedule", desc: "Used regularly" },
+                                    { value: "PURCHASE", label: "Purchased", icon: "receipt_long", desc: "Bought myself" },
+                                    { value: "UNBOXING", label: "Unboxing", icon: "package_2", desc: "First open" },
+                                    { value: "COMPARISON", label: "Comparison", icon: "compare", desc: "Side by side" },
+                                ].map((pt) => (
                                     <button
-                                        key={type.value}
-                                        onClick={() => setProofType(type.value)}
-                                        className={`p-4 rounded-lg border text-left transition-colors ${proofType === type.value
-                                                ? "border-[#2b8cee] bg-[#2b8cee]/5"
-                                                : "border-slate-200 hover:bg-slate-50"
-                                            }`}
+                                        key={pt.value}
+                                        onClick={() => setProofType(pt.value)}
+                                        className={`p-4 rounded-lg border text-left transition-colors ${proofType === pt.value ? "border-primary-500 bg-primary-50" : "border-gray-200 hover:border-gray-300"}`}
                                     >
-                                        <span
-                                            className={`material-symbols-outlined text-2xl mb-2 ${proofType === type.value ? "text-[#2b8cee]" : "text-slate-400"
-                                                }`}
-                                        >
-                                            {type.icon}
-                                        </span>
-                                        <p className="font-medium text-slate-900">{type.label}</p>
-                                        <p className="text-xs text-slate-500">{type.desc}</p>
+                                        <span className={`material-symbols-outlined !text-[22px] mb-2 block ${proofType === pt.value ? "text-primary-500" : "text-gray-400"}`}>{pt.icon}</span>
+                                        <p className="text-sm font-semibold text-gray-900">{pt.label}</p>
+                                        <p className="text-xs text-gray-500">{pt.desc}</p>
                                     </button>
                                 ))}
                             </div>
                         </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Months of usage</label>
+                            <input
+                                type="number"
+                                min={0}
+                                max={120}
+                                value={usageMonths}
+                                onChange={(e) => setUsageMonths(Number(e.target.value))}
+                                className="w-32 h-11 px-4 rounded-lg border border-gray-300 text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                            />
+                        </div>
                     </div>
                 )}
 
-                {/* Step 4: Review & Submit */}
-                {currentStep === 4 && (
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-900 mb-2">Review & Submit</h2>
-                            <p className="text-slate-500 text-sm">Confirm your review details</p>
+                {step === 4 && (
+                    <div className="text-center py-8">
+                        <span className="material-symbols-outlined !text-5xl text-primary-500 mb-4 block">preview</span>
+                        <h2 className="text-xl font-bold text-gray-900 mb-3">Ready to submit</h2>
+                        <div className="bg-gray-50 rounded-lg p-5 mb-6 text-left max-w-sm mx-auto">
+                            <p className="text-sm text-gray-600"><span className="font-semibold text-gray-800">Title:</span> {title || "Untitled"}</p>
+                            <p className="text-sm text-gray-600 mt-2"><span className="font-semibold text-gray-800">Proof:</span> {proofType}</p>
+                            <p className="text-sm text-gray-600 mt-2"><span className="font-semibold text-gray-800">Usage:</span> {usageMonths} months</p>
+                            {videoFile && <p className="text-sm text-gray-600 mt-2"><span className="font-semibold text-gray-800">Video:</span> {videoFile.name}</p>}
                         </div>
-
-                        <div className="bg-slate-50 rounded-lg p-4 space-y-4">
-                            <div className="flex items-center gap-4">
-                                {videoPreview && (
-                                    <video
-                                        src={videoPreview}
-                                        className="w-24 h-16 rounded object-cover"
-                                    />
-                                )}
-                                <div>
-                                    <p className="font-medium text-slate-900">{title || "Untitled Review"}</p>
-                                    <p className="text-sm text-slate-500">{formatDuration(videoDuration)}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider">Product</p>
-                                    <p className="font-medium text-slate-900">{selectedProduct?.name}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider">Proof Type</p>
-                                    <p className="font-medium text-slate-900 capitalize">
-                                        {proofType?.toLowerCase().replace("_", " ")}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {isSubmitting && (
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-slate-600">Uploading...</span>
-                                    <span className="text-[#2b8cee] font-medium">{Math.round(uploadProgress)}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-[#2b8cee] transition-all duration-300"
-                                        style={{ width: `${uploadProgress}%` }}
-                                    />
-                                </div>
-                            </div>
-                        )}
+                        <p className="text-sm text-gray-400">Your review will be verified through SARS™ before publishing.</p>
                     </div>
                 )}
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between">
+            {/* Navigation */}
+            <div className="flex items-center justify-between mt-6">
                 <button
-                    onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1) as Step)}
-                    disabled={currentStep === 1}
-                    className="flex items-center gap-2 px-4 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setStep((s) => Math.max(1, s - 1) as Step)}
+                    disabled={step === 1}
+                    className="px-5 py-2.5 rounded-lg text-sm font-semibold text-gray-600 border border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                    <span className="material-symbols-outlined text-lg">arrow_back</span>
                     Back
                 </button>
-
-                {currentStep < 4 ? (
+                {step < 4 ? (
                     <button
-                        onClick={() => setCurrentStep((prev) => Math.min(4, prev + 1) as Step)}
-                        disabled={!canProceed()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-[#2b8cee] text-white font-bold rounded-lg hover:bg-[#1e7ed8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setStep((s) => Math.min(4, s + 1) as Step)}
+                        disabled={step === 1 && !videoFile}
+                        className="px-6 py-2.5 rounded-lg text-sm font-semibold gradient-btn-primary text-white hover:opacity-90 disabled:opacity-40 transition-all"
                     >
                         Continue
-                        <span className="material-symbols-outlined text-lg">arrow_forward</span>
                     </button>
                 ) : (
                     <button
                         onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isSubmitting || !title}
+                        className="px-6 py-2.5 rounded-lg text-sm font-semibold gradient-btn-primary text-white hover:opacity-90 disabled:opacity-40 transition-all"
                     >
-                        {isSubmitting ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Uploading...
-                            </>
-                        ) : (
-                            <>
-                                <span className="material-symbols-outlined text-lg">cloud_upload</span>
-                                Submit Review
-                            </>
-                        )}
+                        {isSubmitting ? "Submitting..." : "Submit Review"}
                     </button>
                 )}
             </div>

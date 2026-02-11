@@ -38,6 +38,58 @@ const config: Config = {
           800: "#1e40af",
           900: "#1e3a8a",
         },
+        // Accent Red
+        "accent-red": {
+          50: "#fff1f2",
+          100: "#ffe4e6",
+          200: "#fecdd3",
+          300: "#fda4af",
+          400: "#fb7185",
+          500: "#f43f5e",
+          600: "#e11d48",
+          700: "#be123c",
+        },
+        // Accent Lime
+        "accent-lime": {
+          50: "#f7fee7",
+          100: "#ecfccb",
+          200: "#d9f99d",
+          300: "#bef264",
+          400: "#a3e635",
+          500: "#84cc16",
+          600: "#65a30d",
+          700: "#4d7c0f",
+        },
+        // Accent Yellow
+        "accent-yellow": {
+          50: "#fefce8",
+          100: "#fef9c3",
+          200: "#fef08a",
+          300: "#fde047",
+          400: "#facc15",
+          500: "#eab308",
+          600: "#ca8a04",
+        },
+        // Accent Orange
+        "accent-orange": {
+          50: "#fff7ed",
+          100: "#ffedd5",
+          200: "#fed7aa",
+          300: "#fdba74",
+          400: "#fb923c",
+          500: "#f97316",
+          600: "#ea580c",
+        },
+        // Accent Cyan
+        "accent-cyan": {
+          50: "#ecfeff",
+          100: "#cffafe",
+          200: "#a5f3fc",
+          300: "#67e8f9",
+          400: "#22d3ee",
+          500: "#06b6d4",
+          600: "#0891b2",
+        },
         background: {
           light: "#f6f7f8",
           dark: "#101922",
@@ -99,8 +151,8 @@ const config: Config = {
           "100%": { transform: "scale(1)" },
         },
         pulseGlow: {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(59, 130, 246, 0)" },
-          "50%": { boxShadow: "0 0 20px 4px rgba(59, 130, 246, 0.3)" },
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(244, 63, 94, 0)" },
+          "50%": { boxShadow: "0 0 20px 4px rgba(244, 63, 94, 0.3)" },
         },
         checkmarkSuccess: {
           "0%": { transform: "scale(0) rotate(-45deg)", opacity: "0" },
@@ -114,4 +166,3 @@ const config: Config = {
 };
 
 export default config;
-

@@ -28,12 +28,17 @@ export type ProofType = "USAGE" | "UNBOXING" | "FOLLOWUP";
 export interface Review {
     id: string;
     user_id: string;
-    product_id: string;
+    product_id?: string;
     video_url: string;
     thumbnail_url: string | null;
     duration: number;
     status: ReviewStatus;
     proof_type: ProofType;
+    title?: string;
+    description?: string;
+    usage_duration_months?: number;
+    reason?: string;
+    category?: string;
     created_at: string;
     updated_at: string;
     published_at: string | null;

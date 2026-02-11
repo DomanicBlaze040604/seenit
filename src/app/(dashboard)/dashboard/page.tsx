@@ -1,285 +1,298 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
-import { useProfile } from "@/hooks";
+import { useProfile, useReviews } from "@/hooks";
+import { formatDuration, formatRelativeTime } from "@/lib/utils";
 
 export default function DashboardPage() {
-    const { profile, isLoading } = useProfile();
+    const { profile, isLoading: profileLoading } = useProfile();
+    const { reviews, isLoading: reviewsLoading } = useReviews();
 
-    const credibilityScore = profile?.credibility?.score || 75;
-    const consistencyFactor = profile?.credibility?.consistency_factor || 85;
-    const watchTimeFactor = profile?.credibility?.watch_time_factor || 72;
-    const proofFactor = profile?.credibility?.proof_factor || 80;
-    const communityTrust = profile?.credibility?.community_trust || 90;
+    const isLoading = profileLoading || reviewsLoading;
+    const approvedReviews = reviews?.filter((r) => r.status === "APPROVED") || [];
+    const totalWatchTime = reviews?.reduce((t, r) => t + (r.duration || 0), 0) || 0;
 
-    // Calculate gauge offset
-    const gaugeOffset = 251.2 - (credibilityScore / 100) * 251.2;
-
-    const recentReviews = [
-        {
-            id: "1",
-            title: "Sony WH-1000XM5: One Month Review",
-            category: "Consumer Tech • Headphones",
-            thumbnail: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop",
-            status: "APPROVED",
-            date: "Jan 12, 2026",
-            views: "12.4k",
-            sentiment: "98% Positive",
-        },
-        {
-            id: "2",
-            title: "Premium Espresso Machine Setup",
-            category: "Home Goods • Kitchen",
-            thumbnail: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop",
-            status: "PENDING",
-            date: "Jan 14, 2026",
-            views: "--",
-            sentiment: "Processing...",
-        },
-        {
-            id: "3",
-            title: "Honest Glow Serum Unboxing",
-            category: "Lifestyle • Beauty",
-            thumbnail: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200&h=200&fit=crop",
-            status: "REJECTED",
-            date: "Jan 08, 2026",
-            views: "245",
-            sentiment: "Under Review",
-        },
-    ];
-
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "APPROVED":
-                return (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                        Verified
-                    </span>
-                );
-            case "PENDING":
-                return (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                        Pending
-                    </span>
-                );
-            case "REJECTED":
-                return (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                        Flagged
-                    </span>
-                );
-            default:
-                return null;
-        }
-    };
+    // Calculate a simple SARS score
+    const sarsScore = React.useMemo(() => {
+        if (!reviews || reviews.length === 0) return 0;
+        const base = Math.min(reviews.length * 8, 40);
+        const approved = approvedReviews.length / Math.max(reviews.length, 1) * 30;
+        const tenure = Math.min(20, 20);
+        const quality = Math.min(10, reviews.length * 2);
+        return Math.round(base + approved + tenure + quality);
+    }, [reviews, approvedReviews]);
 
     if (isLoading) {
         return (
-            <div className="space-y-8">
-                <div className="h-10 w-64 bg-slate-200 rounded animate-pulse" />
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                    <div className="xl:col-span-5 h-96 bg-slate-200 rounded-xl animate-pulse" />
-                    <div className="xl:col-span-7 h-96 bg-slate-200 rounded-xl animate-pulse" />
-                </div>
+            <div className="flex items-center justify-center h-64">
+                <div className="w-8 h-8 border-3 border-gray-200 border-t-primary-500 rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 animate-fade-in">
-            {/* Page Heading */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
-                        Creator Trust Center
-                    </h2>
-                    <p className="text-slate-500">
-                        Manage your credibility and track your UGC performance in real-time.
-                    </p>
+        <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                    <p className="text-gray-500 mt-1">Welcome back, {profile?.display_name || "Creator"}</p>
                 </div>
                 <Link
                     href="/upload"
-                    className="inline-flex items-center gap-2 bg-[#2b8cee] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-[#1e7ed8] transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg gradient-btn-primary text-white font-semibold text-sm hover:opacity-90 transition-all"
                 >
-                    <span className="material-symbols-outlined text-lg">cloud_upload</span>
+                    <span className="material-symbols-outlined !text-[20px]">cloud_upload</span>
                     Upload Review
                 </Link>
             </div>
 
-            {/* Dashboard Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                {/* Left: Credibility Score */}
-                <div className="xl:col-span-5 flex flex-col gap-6">
-                    <div className="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-                            <h3 className="text-lg font-bold text-slate-900">Credibility Score</h3>
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider w-fit">
-                                <span className="material-symbols-outlined text-sm">verified</span>
-                                Trusted
-                            </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-primary-500 !text-[20px]">rate_review</span>
                         </div>
-                        <div className="flex flex-col items-center justify-center py-4">
-                            {/* Gauge */}
-                            <div className="relative w-40 h-40 md:w-48 md:h-48">
-                                <svg className="w-full h-full" viewBox="0 0 100 100">
-                                    <circle
-                                        className="stroke-slate-100"
-                                        cx="50"
-                                        cy="50"
-                                        fill="transparent"
-                                        r="40"
-                                        strokeWidth="8"
-                                    />
-                                    <circle
-                                        className="stroke-[#2b8cee]"
-                                        cx="50"
-                                        cy="50"
-                                        fill="transparent"
-                                        r="40"
-                                        strokeDasharray="251.2"
-                                        strokeDashoffset={gaugeOffset}
-                                        strokeLinecap="round"
-                                        strokeWidth="8"
-                                        style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%" }}
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl md:text-5xl font-black text-slate-900">
-                                        {Math.round(credibilityScore)}
-                                    </span>
-                                    <span className="text-slate-500 text-sm font-medium">/ 100</span>
-                                </div>
+                        <span className="text-sm font-medium text-gray-500">Total Reviews</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{reviews?.length || 0}</p>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-accent-green-50 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-accent-green-500 !text-[20px]">check_circle</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-500">Approved</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{approvedReviews.length}</p>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-accent-amber-50 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-accent-amber-500 !text-[20px]">timer</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-500">Watch Time</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{formatDuration(totalWatchTime)}</p>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-accent-sky-50 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-accent-sky-500 !text-[20px]">verified</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-500">Trust Level</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{profile?.trust_level || "NEW"}</p>
+                </div>
+            </div>
+
+            {/* SARS Score & Recent Reviews */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* SARS Score Card */}
+                <div className="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">SARS™ Score</h3>
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="relative w-40 h-40">
+                            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                                <circle cx="50" cy="50" r="42" fill="none" stroke={sarsScore >= 70 ? "#10b981" : sarsScore >= 40 ? "#f59e0b" : "#f43f5e"} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${sarsScore * 2.64} 264`} />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-3xl font-bold text-gray-900">{sarsScore}</span>
+                                <span className="text-xs text-gray-500 font-medium">/ 100</span>
                             </div>
-                            <p className="mt-6 text-center text-slate-500 max-w-xs mx-auto text-sm">
-                                You are currently in the{" "}
-                                <span className="text-slate-900 font-bold">top 15%</span> of trusted creators.
-                            </p>
                         </div>
                     </div>
-
-                    {/* Trust Factors Breakdown */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Consistency
-                            </p>
-                            <div className="flex items-end justify-between mt-2">
-                                <p className="text-xl md:text-2xl font-bold text-slate-900">{consistencyFactor}%</p>
-                                <span className="text-green-600 text-xs font-bold flex items-center">
-                                    <span className="material-symbols-outlined text-sm">arrow_upward</span>5%
-                                </span>
+                    <div className="space-y-3">
+                        {[
+                            { label: "Experience", value: 35, max: 40, color: "bg-primary-500" },
+                            { label: "Credibility", value: 25, max: 30, color: "bg-accent-green-500" },
+                            { label: "Quality", value: 15, max: 20, color: "bg-accent-amber-500" },
+                            { label: "Engagement", value: 8, max: 10, color: "bg-accent-sky-500" },
+                        ].map((f) => (
+                            <div key={f.label}>
+                                <div className="flex justify-between text-xs mb-1">
+                                    <span className="text-gray-600 font-medium">{f.label}</span>
+                                    <span className="text-gray-400">{f.value}/{f.max}</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className={`h-full ${f.color} rounded-full`} style={{ width: `${(f.value / f.max) * 100}%` }} />
+                                </div>
                             </div>
-                        </div>
-                        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Watch Time
-                            </p>
-                            <div className="flex items-end justify-between mt-2">
-                                <p className="text-xl md:text-2xl font-bold text-slate-900">{watchTimeFactor}%</p>
-                                <span className="text-green-600 text-xs font-bold flex items-center">
-                                    <span className="material-symbols-outlined text-sm">arrow_upward</span>12%
-                                </span>
-                            </div>
-                        </div>
-                        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Proof Quality
-                            </p>
-                            <div className="flex items-end justify-between mt-2">
-                                <p className="text-xl md:text-2xl font-bold text-slate-900">High</p>
-                                <span className="text-green-600 text-xs font-bold flex items-center">
-                                    <span className="material-symbols-outlined text-sm">verified</span>
-                                </span>
-                            </div>
-                        </div>
-                        <div className="bg-white p-4 md:p-5 rounded-xl border border-slate-200">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Community
-                            </p>
-                            <div className="flex items-end justify-between mt-2">
-                                <p className="text-xl md:text-2xl font-bold text-slate-900">{communityTrust}%</p>
-                                <span className="text-green-600 text-xs font-bold flex items-center">
-                                    <span className="material-symbols-outlined text-sm">arrow_upward</span>8%
-                                </span>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* Right: Recent Reviews List */}
-                <div className="xl:col-span-7">
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="px-4 md:px-6 py-4 md:py-5 border-b border-slate-200 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900">Recent Reviews</h3>
-                            <Link
-                                href="/reviews"
-                                className="text-[#2b8cee] text-sm font-bold hover:underline flex items-center gap-1"
-                            >
-                                View All <span className="material-symbols-outlined text-sm">chevron_right</span>
-                            </Link>
+                {/* Recent Reviews */}
+                <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-5">
+                        <h3 className="text-lg font-bold text-gray-900">Recent Reviews</h3>
+                        <Link href="/reviews" className="text-sm text-primary-600 font-medium hover:text-primary-700">View all →</Link>
+                    </div>
+                    {!reviews || reviews.length === 0 ? (
+                        <div className="text-center py-12 text-gray-400">
+                            <span className="material-symbols-outlined !text-5xl mb-3 block text-gray-300">videocam_off</span>
+                            <p className="font-medium">No reviews yet</p>
+                            <p className="text-sm mt-1">Upload your first review to get started</p>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-4 md:px-6 py-3 md:py-4">Review</th>
-                                        <th className="px-4 md:px-6 py-3 md:py-4 text-center">Status</th>
-                                        <th className="px-4 md:px-6 py-3 md:py-4 text-right hidden sm:table-cell">Views</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {recentReviews.map((review) => (
-                                        <tr key={review.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-4 md:px-6 py-3 md:py-4">
-                                                <div className="flex items-center gap-3 md:gap-4">
-                                                    <div
-                                                        className="w-12 h-12 md:w-16 md:h-16 rounded-lg bg-cover bg-center shrink-0 border border-slate-200"
-                                                        style={{ backgroundImage: `url('${review.thumbnail}')` }}
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="font-bold text-sm text-slate-900 truncate">{review.title}</p>
-                                                        <p className="text-xs text-slate-500">{review.category}</p>
-                                                        <p className="text-xs text-slate-400 mt-1">{review.date}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                                                {getStatusBadge(review.status)}
-                                            </td>
-                                            <td className="px-4 md:px-6 py-3 md:py-4 text-right hidden sm:table-cell">
-                                                <div className="text-sm font-bold text-slate-900">{review.views}</div>
-                                                <div
-                                                    className={`text-xs font-medium ${review.status === "APPROVED"
-                                                            ? "text-green-600"
-                                                            : review.status === "REJECTED"
-                                                                ? "text-red-600"
-                                                                : "text-slate-500"
-                                                        }`}
-                                                >
-                                                    {review.sentiment}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    ) : (
+                        <div className="space-y-3">
+                            {reviews.slice(0, 5).map((review) => (
+                                <div key={review.id} className="flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
+                                    <div className="w-16 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                        <span className="material-symbols-outlined text-gray-400">play_circle</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-gray-900 truncate">{review.title}</p>
+                                        <p className="text-xs text-gray-400 mt-1">{formatRelativeTime(review.created_at)} • {formatDuration(review.duration || 0)}</p>
+                                    </div>
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${review.status === "APPROVED" ? "bg-accent-green-50 text-accent-green-700" :
+                                        review.status === "PENDING" ? "bg-accent-amber-50 text-accent-amber-700" :
+                                            "bg-accent-red-50 text-accent-red-700"
+                                        }`}>{review.status}</span>
+                                </div>
+                            ))}
                         </div>
-                        {recentReviews.length === 0 && (
-                            <div className="p-8 text-center">
-                                <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">
-                                    video_library
-                                </span>
-                                <p className="text-slate-500">No reviews yet</p>
-                                <Link
-                                    href="/upload"
-                                    className="inline-flex items-center gap-2 mt-4 text-[#2b8cee] font-bold"
-                                >
-                                    Upload your first review
-                                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                                </Link>
+                    )}
+                </div>
+            </div>
+
+            {/* Monetisation & Rewards Section */}
+            <div className="mt-8">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-amber-400 to-accent-amber-500 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-white !text-[20px]">monetization_on</span>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900">Monetisation & Rewards</h3>
+                        <p className="text-xs text-gray-500">Your earning potential on SeenIt</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Creator Side */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4">
+                            <div className="flex items-center gap-2 text-white">
+                                <span className="material-symbols-outlined !text-[20px]">videocam</span>
+                                <h4 className="font-bold text-sm">Creator Earnings</h4>
                             </div>
-                        )}
+                            <p className="text-primary-100 text-xs mt-1">Get paid for your impact, not just opinions</p>
+                        </div>
+                        <div className="p-6 space-y-5">
+                            {/* Views Earning */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="material-symbols-outlined text-primary-500 !text-[18px]">visibility</span>
+                                    <span className="text-sm font-bold text-gray-900">Per 1,000 Views</span>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-xs text-gray-500 font-medium">Earned based on SARS™ Score</span>
+                                        <span className="text-xs text-primary-600 font-bold">$1 – $7 / 1K views</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {[
+                                            { tier: "Elite", range: "80–100", rate: "$5 – $7", color: "bg-accent-amber-400", width: "100%" },
+                                            { tier: "Trusted", range: "50–79", rate: "$2 – $5", color: "bg-primary-500", width: "65%" },
+                                            { tier: "New", range: "0–49", rate: "$1 – $2", color: "bg-gray-400", width: "30%" },
+                                        ].map((t) => (
+                                            <div key={t.tier} className="flex items-center gap-3">
+                                                <span className="text-xs text-gray-600 font-medium w-14">{t.tier}</span>
+                                                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div className={`h-full ${t.color} rounded-full`} style={{ width: t.width }}></div>
+                                                </div>
+                                                <span className="text-xs text-gray-700 font-semibold w-20 text-right">{t.rate}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Sales Commission */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="material-symbols-outlined text-accent-green-500 !text-[18px]">shopping_bag</span>
+                                    <span className="text-sm font-bold text-gray-900">Sales Commission</span>
+                                </div>
+                                <div className="bg-accent-green-50 rounded-lg p-4 border border-accent-green-100">
+                                    <p className="text-sm text-gray-700 leading-relaxed">
+                                        Earn a <span className="font-bold text-accent-green-700">%&nbsp;commission</span> on every purchase made through your review. Rates vary by product category and brand partnership.
+                                    </p>
+                                    <div className="flex gap-2 mt-3">
+                                        <span className="text-[10px] bg-white text-gray-600 px-2 py-1 rounded font-medium border border-accent-green-200">Electronics: 2–4%</span>
+                                        <span className="text-[10px] bg-white text-gray-600 px-2 py-1 rounded font-medium border border-accent-green-200">Beauty: 5–8%</span>
+                                        <span className="text-[10px] bg-white text-gray-600 px-2 py-1 rounded font-medium border border-accent-green-200">Fashion: 4–7%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Customer Side */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gradient-to-r from-accent-amber-500 to-accent-amber-400 px-6 py-4">
+                            <div className="flex items-center gap-2 text-white">
+                                <span className="material-symbols-outlined !text-[20px]">redeem</span>
+                                <h4 className="font-bold text-sm">Customer Rewards</h4>
+                            </div>
+                            <p className="text-amber-100 text-xs mt-1">Discover, watch, buy — and get rewarded</p>
+                        </div>
+                        <div className="p-6 space-y-5">
+                            {/* Purchase Intent */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="material-symbols-outlined text-accent-amber-500 !text-[18px]">explore</span>
+                                    <span className="text-sm font-bold text-gray-900">Purchase Intent</span>
+                                </div>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                                    Browse honest, layman reviews from real users — build genuine confidence before you buy.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {["Browse Reviews", "Compare Products", "Save Favourites", "Follow Creators"].map((item) => (
+                                        <span key={item} className="text-xs bg-accent-amber-50 text-accent-amber-700 px-3 py-1.5 rounded-full font-medium border border-accent-amber-200">{item}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* SARS-based Rewards */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="material-symbols-outlined text-accent-red-500 !text-[18px]">local_offer</span>
+                                    <span className="text-sm font-bold text-gray-900">SARS™ Based Perks</span>
+                                </div>
+                                <div className="bg-accent-red-50 rounded-lg p-4 border border-accent-red-100">
+                                    <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                                        Your SARS™ score unlocks <span className="font-bold text-accent-red-600">exclusive offers, promotions & discounts</span> from partner brands.
+                                    </p>
+                                    <div className="space-y-2">
+                                        {[
+                                            { icon: "percent", label: "Exclusive Discounts", desc: "Score-based discount tiers" },
+                                            { icon: "campaign", label: "Early Access", desc: "New product launches & deals" },
+                                            { icon: "card_giftcard", label: "Rewards Points", desc: "Earn XP on every interaction" },
+                                        ].map((perk) => (
+                                            <div key={perk.label} className="flex items-center gap-3 bg-white rounded-lg p-3 border border-accent-red-100">
+                                                <span className="material-symbols-outlined text-accent-red-400 !text-[16px]">{perk.icon}</span>
+                                                <div>
+                                                    <p className="text-xs font-semibold text-gray-800">{perk.label}</p>
+                                                    <p className="text-[10px] text-gray-500">{perk.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Gamified */}
+                            <div className="flex items-center gap-3 bg-gradient-to-r from-primary-50 to-accent-amber-50 rounded-lg px-4 py-3 border border-primary-100">
+                                <span className="material-symbols-outlined text-primary-500 !text-[20px]">sports_esports</span>
+                                <div>
+                                    <p className="text-xs font-bold text-gray-900">Gamified Experience</p>
+                                    <p className="text-[10px] text-gray-500">Earn XP, unlock badges, climb leaderboards — both as a customer and creator!</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
