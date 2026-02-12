@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {/* Logo */}
                     <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-100">
                         <Link href="/" className="inline-block">
-                            <img src="/logo.jpg" alt="SeenIt" className="h-9 w-auto" />
+                            <img src="/logo.png" alt="SeenIt" className="h-11 w-auto" />
                         </Link>
                     </div>
 
@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <span className="material-symbols-outlined">menu</span>
                     </button>
                     <Link href="/" className="inline-block">
-                        <img src="/logo.jpg" alt="SeenIt" className="h-8 w-auto" />
+                        <img src="/logo.png" alt="SeenIt" className="h-10 w-auto" />
                     </Link>
                 </header>
 

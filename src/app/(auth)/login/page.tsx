@@ -42,7 +42,7 @@ export default function LoginPage() {
             <div className="hidden lg:flex lg:w-1/2 gradient-cta flex-col justify-center px-16 relative overflow-hidden">
                 <div className="relative z-10">
                     <Link href="/" className="mb-12 inline-block">
-                        <img src="/logo.jpg" alt="SeenIt" className="h-12 w-auto brightness-0 invert" />
+                        <img src="/logo.png" alt="SeenIt" className="h-14 w-auto brightness-0 invert" />
                     </Link>
                     <h1 className="text-4xl font-extrabold text-white leading-tight mb-6">
                         India&apos;s Trust-First<br />Review Platform
@@ -71,7 +71,7 @@ export default function LoginPage() {
             <div className="flex-1 flex items-center justify-center px-6 py-12">
                 <div className="w-full max-w-md">
                     <div className="lg:hidden mb-8">
-                        <img src="/logo.jpg" alt="SeenIt" className="h-10 w-auto" />
+                        <img src="/logo.png" alt="SeenIt" className="h-12 w-auto" />
                     </div>
 
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">

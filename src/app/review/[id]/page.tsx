@@ -34,7 +34,7 @@ export default function ReviewPage() {
                 <div className="max-w-[1200px] mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-8">
                         <Link href="/" className="inline-block">
-                            <img src="/logo.jpg" alt="SeenIt" className="h-10 w-auto" />
+                            <img src="/logo.png" alt="SeenIt" className="h-12 w-auto" />
                         </Link>
                         <nav className="hidden md:flex items-center gap-6">
                             <a className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors" href="#">Feed</a>

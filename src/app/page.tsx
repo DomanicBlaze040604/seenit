@@ -15,16 +15,90 @@ const categories = [
 
 export default function HomePage() {
   const [catOpen, setCatOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden font-body bg-white">
-      {/* Navigation */}
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />}
+
+      {/* Mobile Slide-out Menu */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r border-gray-200 transform transition-transform duration-300 md:hidden ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex flex-col h-full">
+          {/* Mobile Menu Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+              <img src="/logo.png" alt="SeenIt" className="h-12 w-auto" />
+            </Link>
+            <button onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-gray-900">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          {/* Mobile Nav Links */}
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <a onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" href="#how-it-works">
+              <span className="material-symbols-outlined !text-[20px] text-gray-400">info</span>
+              How it Works
+            </a>
+            <a onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" href="#for-consumers">
+              <span className="material-symbols-outlined !text-[20px] text-gray-400">person</span>
+              For Consumers
+            </a>
+            <a onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" href="#for-brands">
+              <span className="material-symbols-outlined !text-[20px] text-gray-400">business</span>
+              For Brands
+            </a>
+            <a onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" href="#monetisation">
+              <span className="material-symbols-outlined !text-[20px] text-gray-400">monetization_on</span>
+              Monetisation
+            </a>
+
+            {/* Categories in Mobile Menu */}
+            <div className="pt-4">
+              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Categories</div>
+              {categories.map((cat) => (
+                <a
+                  key={cat.name}
+                  href="#"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors rounded-lg"
+                >
+                  <span className="material-symbols-outlined !text-[18px] text-gray-400">{cat.icon}</span>
+                  {cat.name}
+                </a>
+              ))}
+            </div>
+          </nav>
+
+          {/* Mobile Menu Footer - Auth Buttons */}
+          <div className="px-3 py-4 border-t border-gray-100 space-y-2">
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-center rounded-lg h-11 px-5 gradient-btn-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+              Sign Up
+            </Link>
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-center rounded-lg h-11 px-5 border border-gray-300 text-gray-700 text-sm font-semibold hover:border-primary-400 hover:text-primary-600 transition-colors">
+              Login
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 md:px-10 py-2">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-10">
+            {/* Mobile Hamburger Button */}
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-gray-600 hover:text-gray-900 -ml-2">
+              <span className="material-symbols-outlined !text-[28px]">menu</span>
+            </button>
+
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <img src="/logo.jpg" alt="SeenIt" className="h-14 w-auto" />
+              <img src="/logo.png" alt="SeenIt" className="h-18 w-auto" />
             </Link>
+
+            {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-7">
               <a className="text-gray-600 text-sm font-semibold hover:text-primary-600 transition-colors" href="#how-it-works">How it Works</a>
               <a className="text-gray-600 text-sm font-semibold hover:text-primary-600 transition-colors" href="#for-consumers">For Consumers</a>
@@ -62,9 +136,17 @@ export default function HomePage() {
               </div>
             </nav>
           </div>
-          <div className="flex gap-3">
+
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex gap-3">
             <Link href="/login" className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-5 gradient-btn-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity">Sign Up</Link>
             <Link href="/login" className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-5 border border-gray-300 text-gray-700 text-sm font-semibold hover:border-primary-400 hover:text-primary-600 transition-colors">Login</Link>
+          </div>
+
+          {/* Mobile Auth Buttons */}
+          <div className="flex md:hidden gap-2">
+            <Link href="/login" className="flex min-w-[70px] cursor-pointer items-center justify-center rounded-lg h-9 px-4 gradient-btn-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity">Sign Up</Link>
+            <Link href="/login" className="flex min-w-[60px] cursor-pointer items-center justify-center rounded-lg h-9 px-3 border border-gray-300 text-gray-700 text-xs font-semibold hover:border-primary-400 hover:text-primary-600 transition-colors">Login</Link>
           </div>
         </div>
       </header>
@@ -798,8 +880,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
             <div className="col-span-2">
               <div className="mb-5 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
-                  <img src="/logo.jpg" alt="SeenIt" className="w-10 h-10 object-contain" />
+                <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+                  <img src="/logo.png" alt="SeenIt" className="w-14 h-14 object-contain" />
                 </div>
                 <span className="text-xl font-bold text-white">SeenIt</span>
               </div>
@@ -845,6 +927,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }
