@@ -1,36 +1,43 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk, Bangers } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-grotesk",
+});
+
+const bangers = Bangers({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-bangers",
 });
 
 export const metadata: Metadata = {
-  title: "SeenIt | Trust-First Video Reviews",
+  title: "SeenIt | See It. Trust It.",
   description:
-    "Experience authentic product feedback through our trust-first UGC video platform. Verified creators, honest experiences, zero manipulation.",
-  keywords: ["reviews", "video reviews", "UGC", "product reviews", "trust", "verified"],
+    "India's first trust-indexed, video-first UGC review platform powered by SARS™. Real people, real products, real experiences — on video.",
+  keywords: [
+    "SeenIt", "video reviews", "UGC", "India reviews", "SARS",
+    "authentic reviews", "product reviews", "trust", "verified creators",
+  ],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spaceGrotesk.variable} ${bangers.variable}`}>
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className={inter.className}>
-        {children}
-      </body>
+      <body className={spaceGrotesk.className}>{children}</body>
     </html>
   );
 }
