@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SeenIt - India's Trust-First Review Platform
 
-## Getting Started
+SeenIt is a video-first UGC review platform powered by the **SARS™ (Subconscious Authenticity Recognition System) Engine**. It is designed to combat fake reviews on the internet by strictly hosting 100% honest, verified user-generated video experiences.
 
-First, run the development server:
+## 🌟 Key Features
+- **🎥 Video-First Reviews:** No text-heavy fake hype. Just real people showing real products.
+- **🛡️ SARS™ Trust Engine:** A proprietary scoring system ensuring authenticity and credibility. 
+- **💰 Earn from Impact:** A 2-sided ecosystem allowing creators to earn from genuine influence while brands get high-converting trusted UGC.
+- **🥇 Gamified Trust XP:** An integrated XP leaderboard, tiers (New, Trusted, Elite), and commission multipliers based on trust metrics.
+- **🇮🇳 Made for India:** Tailor-built for the Indian market dynamics.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠 Tech Stack
+- **Framework:** [Next.js 14](https://nextjs.org/) (App Directory)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Animations:** [Framer Motion](https://www.framer.com/motion/), [GSAP](https://gsap.com/)
+- **3D Graphics:** [Three.js](https://threejs.org/) & `@react-three/fiber`
+- **Backend/Auth:** [Supabase](https://supabase.com/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
+Make sure you have Node.js 18+ installed on your machine.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installation
 
-## Learn More
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Set up your environment variables. 
+   Create a `.env.local` file in the root directory and add your Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧩 Project Structure
+- `/src/app/` - Next.js App Router pages (`page.tsx`, `layout.tsx`, etc.)
+- `/src/app/(auth)/login/` - Custom themed cyberpunk/glassmorphic Authentication suite
+- `/src/components/ui/` - Highly interactive custom components (Radar Hero, HoverFooter, ExpandCards, Interactive Marquee)
+- `/src/lib/` - Utilities and Supabase client configurations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Design System
+- **Colors:** Deep Navy (`#040C1A`), Trust Blue (`#1648CC`), Authenticity Gold (`#FFD700`)
+- **Typography:** Titles in `Bangers` (comic-heavy/Gen-Z feel), Body in `Space Grotesk` (clean tech readability)
+- **Vibe:** Cinematic, dynamic, game-like trust UI, heavily motion-driven to subconsciously signal authenticity.
+
+## 📄 License
+© 2026 SeenIt Technologies Inc. All rights reserved.
