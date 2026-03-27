@@ -9,8 +9,8 @@ export default function RadarHero() {
       <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none">
         <Radar className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[1.5] md:scale-[2.5]" />
 
-        {/* Floating trust signals — plain English labels */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1000px] h-full max-h-[800px]">
+        {/* Floating trust signals — desktop only, they overlap text on mobile */}
+        <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1000px] h-full max-h-[800px]">
           <div className="absolute top-[12%] left-[8%] md:left-[18%]">
             <IconContainer
               text="Real People Only"
@@ -90,16 +90,16 @@ export default function RadarHero() {
           <span className="text-[#9BB5D9] font-semibold"> On SeenIt, you watch someone who already bought it — on video — before you spend a single rupee.</span>
         </p>
 
-        {/* 3 pills — who is this for, instantly */}
-        <div className="flex flex-wrap justify-center gap-2.5 mt-8">
+        {/* 3 pills — who is this for, one line */}
+        <div className="flex flex-row justify-center gap-2 mt-8 flex-wrap">
           {[
-            { emoji: "👀", label: "Buyers — watch before you buy" },
-            { emoji: "📹", label: "Reviewers — record & earn money" },
-            { emoji: "🏷️", label: "Brands — get authentic reviews" },
+            { emoji: "👀", label: "Watch & Buy" },
+            { emoji: "📹", label: "Review & Earn" },
+            { emoji: "🏷️", label: "Brands" },
           ].map((pill) => (
             <span
               key={pill.label}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/10 text-[#9BB5D9] text-xs md:text-sm font-semibold"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/[0.06] border border-white/10 text-[#9BB5D9] text-xs font-bold whitespace-nowrap"
             >
               <span>{pill.emoji}</span>
               {pill.label}

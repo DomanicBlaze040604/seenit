@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 
 const REVIEWS = [
   { name: "Priya S.",  product: "Lakme Serum",         score: 91, tier: "Elite",   emoji: "🏆", category: "Beauty",      text: "Game changer for my skin. Zero hype, all results." },
@@ -93,7 +93,10 @@ function MarqueeRow({ reviews, speed }: { reviews: typeof REVIEWS; speed: number
 
     const tick = () => {
       offset -= speed
-      if (Math.abs(offset) >= half) offset += half
+      // Left scroll: offset goes negative → wrap back
+      if (speed > 0 && offset <= -half) offset += half
+      // Right scroll: offset goes positive → wrap back
+      if (speed < 0 && offset >= half) offset -= half
       track.style.transform = `translateX(${offset}px)`
       rafId = requestAnimationFrame(tick)
     }
