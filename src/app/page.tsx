@@ -174,9 +174,9 @@ export default function HomePage() {
           <section className="border-y border-white/[0.05] bg-[#081020]/60 px-4 md:px-10 py-10">
             <div className="max-w-[1280px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
               {[
-                { num: "100%", sub: "Video Reviews", icon: "videocam", color: "text-red-400" },
-                { num: "SARS™", sub: "Trust Engine", icon: "shield", color: "text-[#4E8FFF]" },
-                { num: "2-Sided", sub: "Earn Ecosystem", icon: "monetization_on", color: "text-[#FFD700]" },
+                { num: "100%", sub: "Reviews are Videos", icon: "videocam", color: "text-red-400" },
+                { num: "Zero", sub: "Fake Reviews", icon: "gpp_bad", color: "text-[#FFD700]" },
+                { num: "Earn", sub: "By Reviewing", icon: "monetization_on", color: "text-[#4E8FFF]" },
                 { num: "#1", sub: "India's First", icon: "flag", color: "text-green-400" },
               ].map(stat => (
                 <div key={stat.sub} className="flex flex-col items-center text-center gap-2">
